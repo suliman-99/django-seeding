@@ -5,14 +5,6 @@
     Linkedin: https://linkedin.com/in/suliman-awad-399a471b8
     Facebook: https://www.facebook.com/suliman.awad.507
  -->
-<!-- 
-    Do a search and replace with your text editor for the following: 
-        `email`,
--->
-<!-- 
-    Do a search and replace with your text editor for the following: 
-        `sulimanawadstudy@gmail.com`,
--->
 # Contributor Covenant Code of Conduct
 
 ## Our Pledge
