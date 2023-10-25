@@ -1,6 +1,5 @@
 [project]
 name = 'django-seeding'
-version = '1.0.13'
 description = 'Simple Django Package that helps developer to seed data from files and codes into the database automatically'
 readme = "README.md"
 authors = [
