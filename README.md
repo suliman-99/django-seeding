@@ -571,7 +571,6 @@ Copyright (c) 2023 Suliman Awad
 For more, check out the [License File][license-url].
 
 
-
 <!-- ------------------------------------ urls ------------------------------------ -->
 
 
