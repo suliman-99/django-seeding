@@ -4,7 +4,7 @@ from pathlib import Path
 
 setuptools.setup(
     name='django-seeding',
-    version='1.0.6',
+    version='1.0.9',
     description='Simple Django Package that helps developer to seed data from files and codes into the database automatically',
     long_description=Path('README.md').read_text(),
     long_description_content_type='text/markdown',

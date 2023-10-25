@@ -17,23 +17,27 @@
 
 <div align="center">
 <h3>Django Seeding</h3>
-
-[Report Bug][issues-url]
-    ·
-[Request Feature][issues-url]
-
 </div>
 
-[![photo][photo-url]][demo-url]
-
-***
 
 ## Table of Contents
 
 - [Introduction](#introduction)
-- [Features](#features)
 - [Installation](#installation)
-- [Usage](#usage)
+- [Simple Example](#simple-example)
+- [Full Usage Documentation](#full-usage-documentation)
+    - [Seeders List](#seeders-list)
+    - [Attributes List](#attributes-list)
+    - [Run Methods](#run-methods)
+- [Full Examples](#full-examples)
+    - [CSVFileModelSeeder (Recommended)](#csvfilemodelseeder-recommended)
+    - [JSONFileModelSeeder (Recommended)](#jsonfilemodelseeder-recommended)
+    - [CSVFileSerializerSeeder](#csvfileserializerseeder)
+    - [JSONFileSerializerSeeder](#jsonfileserializerseeder)
+    - [EmptySeeder (Recommended)](#emptyseeder-recommended)
+    - [ModelSeeder (Recommended)](#modelseeder-recommended)
+    - [SerializerSeeder](#serializerseeder)
+    - [Seeder](#seeder)
 - [Contributing](#contributing)
 - [Contact](#contact)
 - [License](#license)
@@ -41,7 +45,11 @@
 
 ## Introduction
 
-This is a package that help developers seed thier database with real needed data instead of fil it manually
+This package helps develpoers to `fill` the database with `real data` instead of filling it manually.
+
+Data can be presented as `CSV File` , `JSON File` or `in-code`.
+
+`Dependency-Injection` also available to inject your logic by specifying a `serializer_class` or writing your custom `seed` method.
 
 
 ## Installation
@@ -62,9 +70,9 @@ INSTALLED_APPS = [
 ```
 
 
-## Usage
+## Simple Example
 
-Let's take a look at a quick example of using django-seeding to build simples seeder to store it in the database.
+Let's take a look at a quick example of using `CSVFileModelSeeder` seeder from `django-seeding` to build a simple seeder to insert data in the database.
 
 django_seeding_example/models.py:
 ```
@@ -82,11 +90,8 @@ from django_seeding import seeders
 from django_seeding.seeder_registry import SeederRegistry 
 from django_seeding_example.models import M1
 
-# this is a fast seeder on a model aith a csv file that contains the data
 @SeederRegistry.register
 class M1Seeder(seeders.CSVFileModelSeeder):
-    id = 'M1Seeder'
-    priopity = 1
     model = M1
     csv_file_path = 'django_seeding_example/seeders_data/M1Seeder.csv'
 ```
@@ -98,9 +103,97 @@ t1,d1
 t2,d2
 ```
 
-then the seeder can be run by three ways:
+Now you just need to run this commande:
 
-* To seed with a specific command (Recommended):
+```
+python manage.py seed
+```
+## Full Usage Documentation: 
+
+Now lets go deeper into the different Seeders types with its details:
+
+### Seeders List:
+- [CSVFileModelSeeder (Recommended)](#csvfilemodelseeder-recommended)
+- [JSONFileModelSeeder (Recommended)](#jsonfilemodelseeder-recommended)
+- [CSVFileSerializerSeeder](#csvfileserializerseeder)
+- [JSONFileSerializerSeeder](#jsonfileserializerseeder)
+- [EmptySeeder (Recommended)](#emptyseeder-recommended)
+- [ModelSeeder (Recommended)](#modelseeder-recommended)
+- [SerializerSeeder](#serializerseeder)
+- [Seeder](#seeder)
+
+### Attributes List
+
+#### In general there is a way to know how to deal with these seeders easily:
+
+Model..Seeder needs `model` class-attribute
+
+Serializer..Seeder needs `serializer_class` class-attribute
+
+CSVFile..Seeder needs `csv_file_path` class-attribute
+
+JSONFile..Seeder needs `json_file_path` class-attribute
+
+#### All seeders can takes these optional class-attributes:
+* `id: str` (So Recommended) 
+
+    This is what will be stored in the AppliedSeeder table to check if a seeder is already applied or not
+
+    It is recommended to set it as the seeder name
+
+    So, set it and don't change it because when the value is changed it will be considerd as a new seeder and it will be applied again even that the old seeder with the old name is applied
+
+    default value: `str(type(seeder))`
+
+
+
+* `priority: int|float` 
+
+    Seeders will be sorted depending on this attribute (lower-first)
+
+    default value: `float('inf')`
+
+
+
+
+
+* `just_debug: bool` 
+
+    This attribute specify if the seeder will be applied when the server is in the production-mode or not depending in the DEBUG variable in settings file
+
+    `DEBUG=False` & `just_debug=True` -> don't apply
+
+    `DEBUG=False` & `just_debug=False` -> apply
+
+    `DEBUG=True` & `just_debug=False` -> apply
+
+    `DEBUG=True` & `just_debug=True` -> apply
+
+    default value: `False`
+
+#### Notice:
+
+* `@SeederRegistry.register` is the decorator that register the seeder, so, if this decorator is not applied then the seeder will not be applied
+* Model seeders use bulk_create method, so, they are faster than Serializer seeders
+* CSV file reader is using pandas for a better performance and less bugs
+* Using Model seeders means the fields names must match the fields you have defined in your model
+* Using Serializer seeders means the fields names must match the fields you have defined in your serializer
+* you can define `get_` class-methods instead of class-attributes as below:
+    
+    ```
+    get_model
+    get_serializer_class
+    get_csv_file_path
+    get_json_file_path
+    get_id
+    get_priority
+    get_just_debug
+    ```
+
+
+### Run methods:
+
+* To seed with a manual command (Recommended):
 
 ```
 python manage.py seed
@@ -120,21 +213,339 @@ python manage.py runserver --seed
 SEEDING_ON_RUNSERVER = True
 ``` 
 
-## Features
+#### Notice: 
+* If you set `SEEDING_ON_RUNSERVER=True` in your settings file You can stop seeding in a runserver by using `--dont-seed` argument
 
-With django-seeding package you can:
+```
+python manage.py runserver --dont-seed
+```
 
-* Use Full Implemenation for fast model seeding (bulk_create) by [ModelSeeder, CSVFileModelSeeder and JSONFileModelSeeder]
-* Use Full Implemenation for slow serializer seeding one-by-one (not bulk_create) (to inject your logic in the seeder) by [SerializerSeeder, CSVFileSerializerSeeder and JSONFileSerializerSeeder]
-* Use CSV file reader by pandas package
-* Use JSON file reader
-* write you custom seeder
-* sort your seeders by the priority class-attribute
-* give a specific identifiers to you seeder by id class-attribute
-* limit a seeder to be applied just in the debug mode by just_debug class-attribute
-* let the seeders be applied with the runserver with SEEDING_ON_RUNSERVER variable in you project settings file
-* runserver with seeding with --seed (even that SEEDING_ON_RUNSERVER=False) : "python manage.py runserver --seed"
-* runserver without seeding with --dont-seed (even that SEEDING_ON_RUNSERVER=True): "python manage.py runserver --dont-seed"
+
+## Full Examples:
+
+
+Here we will go deeper in the seeders classes and its details
+
+
+#### CSVFileModelSeeder (Recommended):
+
+Fast `bulk_create` seeder
+
+notice that the titles in the `csv-file` have to match the fields name in the `model`
+
+models.py
+```
+class M1(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+```
+
+seeders.py
+```
+@SeederRegistry.register
+class M1Seeder(seeders.CSVFileModelSeeder):
+    id = 'M1Seeder'
+    priopity = 1
+    model = M1
+    csv_file_path = 'django_seeding_example/seeders_data/M1Seeder.csv'
+```
+
+seeders_data/M1Seeder.csv
+```
+title,description
+t1,d1
+t2,d2
+```
+
+
+
+#### JSONFileModelSeeder (Recommended):
+
+Fast `bulk_create` seeder
+
+notice that the keys in the `json-file` have to match the fields name in the `model`
+
+models.py
+```
+class M2(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+```
+
+seeders.py
+```
+@SeederRegistry.register
+class M2Seeder(seeders.JSONFileModelSeeder):
+    id = 'M2Seeder'
+    priopity = 2
+    model = M2
+    json_file_path = 'django_seeding_example/seeders_data/M2Seeder.json'
+```
+
+seeders_data/M2Seeder.json
+```
+[
+    {
+        "title": "json t1",
+        "description": "json d1"
+    },
+    {
+        "title": "json t2",
+        "description": "json d2"
+    }
+]
+```
+
+
+
+
+#### CSVFileSerializerSeeder:
+
+Slow one-by-one seeder
+
+notice that the titles in the `csv-file` have to match the fields name in the `serializer`
+
+<b> This seeder is used to inject a serializer to implement custom create logic </b>
+
+models.py
+```
+class M3(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+```
+
+serializers.py
+```
+class M3Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = M3
+        fields = ['title', 'description']
+
+    def create(self, validated_data):
+        validated_data['title'] = '__' + validated_data['title'] + '__'
+        validated_data['description'] = '__' + validated_data['description'] + '__'
+        return super().create(validated_data)
+```
+
+seeders.py
+```
+@SeederRegistry.register
+class M3Seeder(seeders.CSVFileSerializerSeeder):
+    id = 'M3Seeder'
+    priopity = 3
+    serializer_class = M3Serializer
+    csv_file_path = 'django_seeding_example/seeders_data/M3Seeder.csv'
+```
+
+seeders_data/M3Seeder.csv
+```
+title,description
+t1,d1
+t2,d2
+```
+
+
+
+
+#### JSONFileSerializerSeeder:
+
+Slow one-by-one seeder
+
+notice that the keys in the `json-file` have to match the fields name in the `serializer`
+
+<b> This seeder is used to inject a serializer to implement custom create logic </b>
+
+models.py
+```
+class M4(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+```
+
+serializers.py
+```
+class M4Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = M4
+        fields = ['title', 'description']
+
+    def create(self, validated_data):
+        validated_data['title'] = '__' + validated_data['title'] + '__'
+        validated_data['description'] = '__' + validated_data['description'] + '__'
+        return super().create(validated_data)
+```
+
+seeders.py
+```
+@SeederRegistry.register
+class M4Seeder(seeders.JSONFileSerializerSeeder):
+    id = 'M4Seeder'
+    priopity = 4
+    serializer_class = M4Serializer
+    json_file_path = 'django_seeding_example/seeders_data/M4Seeder.json'
+```
+
+seeders_data/M4Seeder.csv
+```
+[
+    {
+        "title": "json t1",
+        "description": "json d1"
+    },
+    {
+        "title": "json t2",
+        "description": "json d2"
+    }
+]
+```
+
+
+
+
+#### EmptySeeder (Recommended):
+
+Fast `bulk_create` seeder
+
+models.py
+```
+class M5(models.Model):
+    title = models.CharField(max_length=100, null=True)
+    description = models.TextField(null=True)
+```
+
+seeders.py
+```
+@SeederRegistry.register
+class M5Seeder(seeders.EmptySeeder):
+    id = 'M5Seeder'
+    priopity = 5
+    model = M5
+    records_count = 2
+```
+
+
+
+
+#### ModelSeeder (Recommended):
+
+Fast `bulk_create` seeder
+
+notice that the keys in the `data` class-attribute have to match the fields name in the `model`
+
+models.py
+```
+class M6(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+```
+
+seeders.py
+```
+@SeederRegistry.register
+class M6Seeder(seeders.ModelSeeder):
+    id = 'M6Seeder'
+    priopity = 6
+    model = M6
+    data = [
+        {
+            "title": "in-code t1",
+            "description": "in-code d1"
+        },
+        {
+            "title": "in-code t2",
+            "description": "in-code d2"
+        },
+    ]
+```
+
+
+
+
+#### SerializerSeeder:
+
+Slow one-by-one seeder
+
+notice that the keys in the `data` class-attribute have to match the fields name in the `serializer`
+
+<b> This seeder is used to inject a serializer to implement custom create logic </b>
+
+models.py
+```
+class M7(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+```
+
+serializer.py
+```
+class M7Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = M7
+        fields = ['title', 'description']
+
+    def create(self, validated_data):
+        validated_data['title'] = '__' + validated_data['title'] + '__'
+        validated_data['description'] = '__' + validated_data['description'] + '__'
+        return super().create(validated_data)
+```
+
+seeders.py
+```
+@SeederRegistry.register
+class M7Seeder(seeders.SerializerSeeder):
+    id = 'M7Seeder'
+    priopity = 7
+    serializer_class = M7Serializer
+    data = [
+        {
+            "title": "in-code t1",
+            "description": "in-code d1"
+        },
+        {
+            "title": "in-code t2",
+            "description": "in-code d2"
+        },
+    ]
+```
+
+
+
+
+#### Seeder:
+
+Here you can write your logic as you want in the seed method
+
+models.py
+```
+class Post(models.Model):
+    content = models.TextField()
+
+
+class Comment(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    content = models.TextField()
+```
+
+seeders.py
+```
+@SeederRegistry.register
+class CustomSeeder(seeders.Seeder):
+    id = 'CustomSeeder'
+    priopity = 8
+    
+    def seed(self):
+        post1 = Post.objects.create(content='post1')
+        post2 = Post.objects.create(content='post1')
+
+        comment1 = Comment.objects.create(post=post1, content='comment1')
+        comment2 = Comment.objects.create(post=post1, content='comment2')
+        comment3 = Comment.objects.create(post=post2, content='comment3')
+        comment4 = Comment.objects.create(post=post2, content='comment4')
+```
+
+
+
+
 
 
 ## Contributing
