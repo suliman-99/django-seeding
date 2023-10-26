@@ -385,7 +385,7 @@ class M4Seeder(seeders.JSONFileSerializerSeeder):
     json_file_path = 'django_seeding_example/seeders_data/M4Seeder.json'
 ```
 
-seeders_data/M4Seeder.csv
+seeders_data/M4Seeder.json
 ```
 [
     {
