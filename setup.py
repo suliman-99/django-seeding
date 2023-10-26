@@ -2,6 +2,6 @@ import setuptools
 
 
 setuptools.setup(
-    packages=setuptools.find_packages(include=['django_seeding/']),
+    packages=setuptools.find_packages(include=['django_seeding.*']),
     install_requires=('django', 'djangorestframework', 'pandas'),
 )
