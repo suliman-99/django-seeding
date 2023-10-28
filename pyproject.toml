@@ -12,7 +12,7 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/suliman-99/django-seeding"
+"Source" = "https://github.com/suliman-99/django-seeding"
 "Contributors" = "https://github.com/suliman-99/django-seeding/graphs/contributors"
 "License" = "https://github.com/suliman-99/django-seeding/blob/main/LICENSE"
 "Issues" = "https://github.com/suliman-99/django-seeding/issues"
