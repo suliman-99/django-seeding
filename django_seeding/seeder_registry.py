@@ -23,6 +23,10 @@ class SeederRegistry:
         """ Method and decorator to register the seeder-class in the seeders list to be seeded when the server is run """
         if not issubclass(seeder, Seeder):
             raise TypeError('Only subclasses of Seeder class can be registered with SeederRegistry.register')
+        
+        if seeder().get_id() in [obj.get_id() for obj in cls.seeders]:
+            return
+        
         cls.seeders.append(seeder())
 
     @classmethod
