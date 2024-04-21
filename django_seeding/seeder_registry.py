@@ -52,7 +52,7 @@ class SeederRegistry:
         """
         seeders = cls.seeders
         if ids is not None:
-            seeders = filter(lambda seeder: seeder._get_id() in ids, seeders)
+            seeders = list(filter(lambda seeder: seeder._get_id() in ids, seeders))
 
         if AppliedSeeder.objects.filter(id__in=[seeder._get_id() for seeder in seeders]).count() != len(seeders):
             BLUE_COLOR = "\033[94m"
