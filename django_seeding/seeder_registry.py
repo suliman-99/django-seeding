@@ -3,8 +3,8 @@ import importlib.util
 from pathlib import Path
 from django.apps import apps
 from django.conf import settings
-from .seeders import Seeder
-from .models import AppliedSeeder
+from django_seeding.seeders import Seeder
+from django_seeding.models import AppliedSeeder
     
 
 class SeederRegistry:
@@ -39,7 +39,7 @@ class SeederRegistry:
                 spec.loader.exec_module(module)
 
     @classmethod
-    def seed_all(cls):
+    def seed_all(cls, debug=None):
         """ 
         Method that call seed methods for all registered seeders
         
@@ -53,10 +53,10 @@ class SeederRegistry:
 
         cls.seeders.sort(key=lambda seeder: seeder._get_priority())
         for seeder in cls.seeders:
-            seeder._seed()
+            seeder._seed(debug=debug)
 
     @classmethod
-    def import_all_then_seed_all(cls):
+    def import_all_then_seed_all(cls, debug=None):
         """
         Note: the decorator `@SeederRegistry.register` will be applied when the file is imported
 
@@ -71,17 +71,14 @@ class SeederRegistry:
         cls.import_all()
 
         # call the `seed_all()` method to apply all the registered seeders
-        cls.seed_all()
+        cls.seed_all(debug=debug)
 
     @classmethod
     def on_run(cls):
         if 'runserver' not in sys.argv:
             return
         
-        try:
-            seed = bool(settings.SEEDING_ON_RUNSERVER)
-        except AttributeError:
-            seed = False
+        seed = bool(getattr(settings, 'SEEDING_ON_RUNSERVER', False))
             
         if '--seed' in sys.argv:
             seed = True

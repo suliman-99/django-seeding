@@ -4,7 +4,7 @@ from django.db import models
 from django.conf import settings
 from django.http import HttpRequest
 from rest_framework import serializers
-from .models import AppliedSeeder
+from django_seeding.models import AppliedSeeder
 
 
 class Seeder():
@@ -31,19 +31,27 @@ class Seeder():
         """ Method that fill the datebase as wanted """
         raise NotImplementedError('`seed()` must be implemented.')
     
-    def _seed(self):
+    def _seed(self, debug: bool = None):
         """ Inner method that do validation before calling the public `seed()` method """
-        id = self._get_id()
+
+        if debug is None:
+            debug = settings.DEBUG
 
         # if this seeder is just_debug and the settings state is not debug then dont apply it
-        if self._get_just_debug() and not settings.DEBUG:
+        if self._get_just_debug() and not debug:
             return
         
+        id = self._get_id()
+
         # if this seeder is applied before then dont apply it
         if AppliedSeeder.objects.filter(id=id).exists():
             return
         
-        print(f'  Seeding {id}...', end='')
+        PURPLE_COLOR = "\033[35m"
+        GREEN_COLOR = "\033[32m"
+        WHITE_COLOR = "\033[0m"
+
+        print(f'{PURPLE_COLOR}  Seeding {id}...{WHITE_COLOR}', end='')
         
         # apply the seeder 
         self.seed()
@@ -51,9 +59,7 @@ class Seeder():
         # store it in the applied seeders table in the database
         AppliedSeeder.objects.create(id=id)
 
-        GREEN_COLOR = "\033[32m"
-        WHITE_COLOR = "\033[0m"
-        print(GREEN_COLOR + " Successfully ^_^ " + WHITE_COLOR)
+        print(F'{GREEN_COLOR}Successfully ^_^{WHITE_COLOR}')
 
     def get_priority(self):
         """ 

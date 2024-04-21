@@ -1,7 +1,8 @@
 from django.contrib import admin
-from .models import AppliedSeeder
+from django_seeding.models import AppliedSeeder
 
 
 @admin.register(AppliedSeeder)
 class AppliedSeederAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id', )
+    search_fields = ('id', )
