@@ -23,9 +23,10 @@ class SeederRegistry:
         """ Method and decorator to register the seeder-class in the seeders list to be seeded when the server is run """
         if not issubclass(seeder, Seeder):
             raise TypeError('Only subclasses of Seeder class can be registered with SeederRegistry.register')
-        
-        if seeder().get_id() in [obj.get_id() for obj in cls.seeders]:
-            return
+         
+        for cur_seeder in cls.seeders:
+            if cur_seeder._get_id() == seeder()._get_id():
+                return
         
         cls.seeders.append(seeder())
 
@@ -43,24 +44,27 @@ class SeederRegistry:
                 spec.loader.exec_module(module)
 
     @classmethod
-    def seed_all(cls, debug=None):
+    def seed_all(cls, debug=None, ids=None):
         """ 
         Method that call seed methods for all registered seeders
         
         sort the seeders depending on the `priority` (less is applied earlier)
         """
+        seeders = cls.seeders
+        if ids is not None:
+            seeders = filter(lambda seeder: seeder._get_id() in ids, seeders)
 
-        if AppliedSeeder.objects.filter(id__in=[seeder._get_id() for seeder in cls.seeders]).count() != len(cls.seeders):
+        if AppliedSeeder.objects.filter(id__in=[seeder._get_id() for seeder in seeders]).count() != len(seeders):
             BLUE_COLOR = "\033[94m"
             WHITE_COLOR = "\033[0m"
             print(BLUE_COLOR + "Running Seeders: " + WHITE_COLOR)
 
-        cls.seeders.sort(key=lambda seeder: seeder._get_priority())
-        for seeder in cls.seeders:
+        seeders.sort(key=lambda seeder: seeder._get_priority())
+        for seeder in seeders:
             seeder._seed(debug=debug)
 
     @classmethod
-    def import_all_then_seed_all(cls, debug=None):
+    def import_all_then_seed_all(cls, debug=None, ids=None):
         """
         Note: the decorator `@SeederRegistry.register` will be applied when the file is imported
 
@@ -75,7 +79,7 @@ class SeederRegistry:
         cls.import_all()
 
         # call the `seed_all()` method to apply all the registered seeders
-        cls.seed_all(debug=debug)
+        cls.seed_all(debug=debug, ids=ids)
 
     @classmethod
     def on_run(cls):
