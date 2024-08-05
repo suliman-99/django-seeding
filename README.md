@@ -46,7 +46,7 @@
 
 ## Introduction
 
-This package helps develpoers to `fill` the database with `real data` instead of filling it manually.
+This package helps developers to `fill` the database with `real data` instead of filling it manually.
 
 Data can be presented as `CSV File` , `JSON File` or `in-code`.
 
@@ -104,7 +104,7 @@ t1,d1
 t2,d2
 ```
 
-Now you just need to run this commande:
+Now you just need to run this command:
 
 ```
 python manage.py seed
@@ -177,8 +177,8 @@ JSONFile..Seeder needs `json_file_path` class-attribute
 * `@SeederRegistry.register` is the decorator that register the seeder, so, if this decorator is not applied then the seeder will not be applied
 * Model seeders use bulk_create method, so, they are faster than Serializer seeders
 * CSV file reader is using pandas for a better performance and less bugs
-* Using Model seeders means the fields names must match the fields you have defined in your model
-* Using Serializer seeders means the fields names must match the fields you have defined in your serializer
+* Using Model seeders means the field names must match the fields you have defined in your model
+* Using Serializer seeders means the field names must match the fields you have defined in your serializer
 * you can define `get_` class-methods instead of class-attributes as below:
     
     ```
@@ -232,7 +232,7 @@ Here we will go deeper in the seeders classes and its details
 
 Fast `bulk_create` seeder
 
-notice that the titles in the `csv-file` have to match the fields name in the `model`
+notice that the titles in the `csv-file` have to match the field names in the `model`
 
 models.py
 ```
@@ -246,7 +246,7 @@ seeders.py
 @SeederRegistry.register
 class M1Seeder(seeders.CSVFileModelSeeder):
     id = 'M1Seeder'
-    priopity = 1
+    priority = 1
     model = M1
     csv_file_path = 'django_seeding_example/seeders_data/M1Seeder.csv'
 ```
@@ -264,7 +264,7 @@ t2,d2
 
 Fast `bulk_create` seeder
 
-notice that the keys in the `json-file` have to match the fields name in the `model`
+notice that the keys in the `json-file` must match the field names in the `model`
 
 models.py
 ```
@@ -278,7 +278,7 @@ seeders.py
 @SeederRegistry.register
 class M2Seeder(seeders.JSONFileModelSeeder):
     id = 'M2Seeder'
-    priopity = 2
+    priority = 2
     model = M2
     json_file_path = 'django_seeding_example/seeders_data/M2Seeder.json'
 ```
@@ -304,7 +304,7 @@ seeders_data/M2Seeder.json
 
 Slow one-by-one seeder
 
-notice that the titles in the `csv-file` have to match the fields name in the `serializer`
+notice that the titles in the `csv-file` have to match the field names in the `serializer`
 
 <b> This seeder is used to inject a serializer to implement custom create logic </b>
 
@@ -333,7 +333,7 @@ seeders.py
 @SeederRegistry.register
 class M3Seeder(seeders.CSVFileSerializerSeeder):
     id = 'M3Seeder'
-    priopity = 3
+    priority = 3
     serializer_class = M3Serializer
     csv_file_path = 'django_seeding_example/seeders_data/M3Seeder.csv'
 ```
@@ -352,7 +352,7 @@ t2,d2
 
 Slow one-by-one seeder
 
-notice that the keys in the `json-file` have to match the fields name in the `serializer`
+notice that the keys in the `json-file` have to match the field names in the `serializer`
 
 <b> This seeder is used to inject a serializer to implement custom create logic </b>
 
@@ -381,7 +381,7 @@ seeders.py
 @SeederRegistry.register
 class M4Seeder(seeders.JSONFileSerializerSeeder):
     id = 'M4Seeder'
-    priopity = 4
+    priority = 4
     serializer_class = M4Serializer
     json_file_path = 'django_seeding_example/seeders_data/M4Seeder.json'
 ```
@@ -419,7 +419,7 @@ seeders.py
 @SeederRegistry.register
 class M5Seeder(seeders.EmptySeeder):
     id = 'M5Seeder'
-    priopity = 5
+    priority = 5
     model = M5
     records_count = 2
 ```
@@ -431,7 +431,7 @@ class M5Seeder(seeders.EmptySeeder):
 
 Fast `bulk_create` seeder
 
-notice that the keys in the `data` class-attribute have to match the fields name in the `model`
+notice that the keys in the `data` class-attribute have to match the field names in the `model`
 
 models.py
 ```
@@ -445,7 +445,7 @@ seeders.py
 @SeederRegistry.register
 class M6Seeder(seeders.ModelSeeder):
     id = 'M6Seeder'
-    priopity = 6
+    priority = 6
     model = M6
     data = [
         {
@@ -466,7 +466,7 @@ class M6Seeder(seeders.ModelSeeder):
 
 Slow one-by-one seeder
 
-notice that the keys in the `data` class-attribute have to match the fields name in the `serializer`
+notice that the keys in the `data` class-attribute have to match the field names in the `serializer`
 
 <b> This seeder is used to inject a serializer to implement custom create logic </b>
 
@@ -495,7 +495,7 @@ seeders.py
 @SeederRegistry.register
 class M7Seeder(seeders.SerializerSeeder):
     id = 'M7Seeder'
-    priopity = 7
+    priority = 7
     serializer_class = M7Serializer
     data = [
         {
@@ -532,7 +532,7 @@ seeders.py
 @SeederRegistry.register
 class CustomSeeder(seeders.Seeder):
     id = 'CustomSeeder'
-    priopity = 8
+    priority = 8
     
     def seed(self):
         post1 = Post.objects.create(content='post1')
