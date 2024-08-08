@@ -1,0 +1,26 @@
+[
+    {
+        "parent": "json parent 1",
+        "name": "json child 1"
+    },
+    {
+        "parent": "json parent 2",
+        "name": "json child 2"
+    },
+    {
+        "parent": "json parent 2",
+        "name": "json child 3"
+    },
+    {
+        "parent": "json parent 3",
+        "name": "json child 4"
+    },
+    {
+        "parent": "json parent 3",
+        "name": "json child 5"
+    },
+    {
+        "parent": "json parent 3",
+        "name": "json child 6"
+    }
+]

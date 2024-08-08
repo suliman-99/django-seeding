@@ -437,3 +437,88 @@ class JSONFileSerializerSeeder(JSONFileReader, SerializerSeeder):
             `get_serializer_class()` as <method>
     """
     pass
+
+
+class JSONFileChildModelSeeder(JSONFileModelSeeder):
+    """
+    The `JSONFileChildModelSeeder` is a subclass of `JSONFileModelSeeder`, needs `parent_model` and `foreign_key`.
+    Use this class to seed models that are related to other models. The model that will be seeded (aka child model) has a `models.ForeignKey` field which references the parent model.
+    """
+    def get_parent_model(self):
+        """ Method return the `parent_model` of the model that will be seeded """
+        parent_model = getattr(self, 'parent_model', None)
+
+        if parent_model is None:
+            raise TypeError('subclasses of `JSONFileChildModelSeeder` must have `parent_model` class attribute or the `get_parent_model()` method')
+        
+        return parent_model
+    
+    def _get_parent_model(self):
+        """ Inner method to validate the value returned by `get_parent_model()` method """
+        parent_model = self.get_parent_model()
+
+        if not isinstance(parent_model, type) or not issubclass(parent_model, models.Model):
+            raise TypeError('`parent_model` must be a subclasse of `django.db.models.Model`')
+
+        return parent_model
+    
+    def get_keys_dict(self):
+        """
+        Method return the `keys_dict` of {pk: fk}
+        Where pk is the primary key field name of the parent model and fk is the foreign key field name of the child model that will be seeded """
+        keys_dict = getattr(self, 'keys_dict', None)
+
+        if keys_dict is None:
+            raise TypeError('subclasses of `JSONFileChildModelSeeder` must have `keys_dict` class attribute or the `get_keys_dict()` method')
+
+        return keys_dict
+
+    def _get_keys_dict(self):
+        """ Inner method to validate the value returned by `get_keys_dict()` method """
+        keys_dict = self.get_keys_dict()
+
+        if not isinstance(keys_dict, dict):
+            raise TypeError('`keys_dict` must be a dict')
+        
+        # check if the key are fields in parent_model and value are fields in child_model
+        model = self.get_model()
+        parent_model = self.get_parent_model()
+        parent_model_fields = [field.name for field in parent_model._meta.fields]
+        child_model_fields = [field.name for field in model._meta.fields]
+
+        for key, value in keys_dict.items():
+            if key not in parent_model_fields:
+                raise Exception(f'"{key}" is not a "{parent_model.__name__}" field')
+            if value not in child_model_fields:
+                raise Exception(f'"{value}" is not a "{model.__name__}" field')
+            
+        return keys_dict
+    
+    def seed(self):
+        """ Implementation of `seed()` method for child models """
+        model = self._get_model()
+        parent_model = self._get_parent_model()
+        keys_dict = self._get_keys_dict()
+        data = self._get_data()
+
+        for k, v in keys_dict.items():
+            pk_name = k
+            fk_name = v
+            # print(f'pk: {pk_name}, fk: {fk_name}')
+
+        for entry in data:
+            fk = entry.get(fk_name)
+
+            try:
+                pk_obj = parent_model.objects.get(**{pk_name: fk})
+                # print(pk_obj)
+            except parent_model.DoesNotExist:
+                # TO-DO: create parent instance?
+                # ... parent_model.objects.create()
+                
+                raise Exception(f'Error: instance of "{parent_model.__name__}": "{pk_name}" = "{fk}" does not exist! Please change your seeder.json and try again...')
+            else:
+                entry[fk_name] = pk_obj
+
+        new_objects = [model(**entry) for entry in data]
+        model.objects.bulk_create(new_objects)

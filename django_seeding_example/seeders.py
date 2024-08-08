@@ -91,4 +91,20 @@ class CustomSeeder(seeders.Seeder):
         comment2 = Comment.objects.create(post=post1, content='comment2')
         comment3 = Comment.objects.create(post=post2, content='comment3')
         comment4 = Comment.objects.create(post=post2, content='comment4')
-    
+
+
+@SeederRegistry.register
+class Parent1Seeder(seeders.JSONFileModelSeeder):
+    id = 'Parent1Seeder'
+    priority = 9
+    model = Parent1
+    json_file_path = 'django_seeding_example/seeders_data/Parent1Seeder.json'
+
+
+@SeederRegistry.register
+class Child1Seeder(seeders.JSONFileChildModelSeeder):
+    id = 'Child1Seeder'
+    model = Child1
+    parent_model = Parent1
+    keys_dict = {'name': 'parent'}
+    json_file_path = 'django_seeding_example/seeders_data/Child1Seeder.json'

@@ -43,3 +43,12 @@ class Post(models.Model):
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     content = models.TextField()
+
+
+class Parent1(models.Model):
+    name = models.TextField()
+
+
+class Child1(models.Model):
+    parent = models.ForeignKey(Parent1, on_delete=models.CASCADE)
+    name = models.TextField()
