@@ -1,0 +1,12 @@
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    image: python3.10-bookworm
+    container_name: seeding_PR
+    
+    volumes:
+      - ..:/workspace
+    
+    command: sleep infinity
