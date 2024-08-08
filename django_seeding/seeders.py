@@ -74,7 +74,7 @@ class Seeder():
         return getattr(self, 'priority', float('inf'))
     
     def _get_priority(self):
-        """ Innder method to validate the value returned by `get_priority()` method """
+        """ Inner method to validate the value returned by `get_priority()` method """
         priority = self.get_priority()
 
         if not isinstance(priority, float) and not isinstance(priority, int):
@@ -97,7 +97,7 @@ class Seeder():
         return getattr(self, 'just_debug', False)
     
     def _get_just_debug(self):
-        """ Innder method to validate the value returned by `get_just_debug()` method """
+        """ Inner method to validate the value returned by `get_just_debug()` method """
         just_debug = self.get_just_debug()
 
         if not isinstance(just_debug, bool):
@@ -131,7 +131,7 @@ class Seeder():
         return getattr(self, 'id', str(type(self)))
     
     def _get_id(self):
-        """ Innder method to validate the value returned by `get_id()` method """
+        """ Inner method to validate the value returned by `get_id()` method """
         id = self.get_id()
 
         if not isinstance(id, str):
@@ -161,7 +161,7 @@ class DataSeeder(Seeder):
         return data
     
     def _get_data(self):
-        """ Innder method to validate the value returned by `get_data()` method """
+        """ Inner method to validate the value returned by `get_data()` method """
         data = self.get_data()
 
         error_message = '`data` must be list of dict'
@@ -196,7 +196,7 @@ class ModelSeeder(DataSeeder):
         return model
     
     def _get_model(self):
-        """ Innder method to validate the value returned by `get_model()` method """
+        """ Inner method to validate the value returned by `get_model()` method """
         model = self.get_model()
 
         if not isinstance(model, type) or not issubclass(model, models.Model):
@@ -234,7 +234,7 @@ class SerializerSeeder(DataSeeder):
         return serializer_class
     
     def _get_serializer_class(self):
-        """ Innder method to validate the value returned by `get_serializer_class()` method """
+        """ Inner method to validate the value returned by `get_serializer_class()` method """
         serializer_class = self.get_serializer_class()
 
         if not isinstance(serializer_class, type) or not issubclass(serializer_class, serializers.Serializer):
@@ -274,7 +274,7 @@ class EmptySeeder(ModelSeeder):
         return records_count
     
     def _get_records_count(self):
-        """ Innder method to validate the value returned by `get_records_count()` method """
+        """ Inner method to validate the value returned by `get_records_count()` method """
         records_count = self.get_records_count()
 
         if not isinstance(records_count, int):
@@ -310,7 +310,7 @@ class CSVFileReader():
         return csv_file_path
     
     def _get_csv_file_path(self):
-        """ Innder method to validate the value returned by `get_csv_file_path()` method """
+        """ Inner method to validate the value returned by `get_csv_file_path()` method """
         csv_file_path = self.get_csv_file_path()
 
         if not isinstance(csv_file_path, str):
@@ -351,7 +351,7 @@ class JSONFileReader():
         return json_file_path
     
     def _get_json_file_path(self):
-        """ Innder method to validate the value returned by `get_json_file_path()` method """
+        """ Inner method to validate the value returned by `get_json_file_path()` method """
         json_file_path = self.get_json_file_path()
 
         if not isinstance(json_file_path, str):

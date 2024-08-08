@@ -7,7 +7,7 @@ from django_seeding_example.serializers import *
 @SeederRegistry.register
 class M1Seeder(seeders.CSVFileModelSeeder):
     id = 'M1Seeder'
-    priopity = 1
+    priority = 1
     model = M1
     csv_file_path = 'django_seeding_example/seeders_data/M1Seeder.csv'
 
@@ -15,7 +15,7 @@ class M1Seeder(seeders.CSVFileModelSeeder):
 @SeederRegistry.register
 class M2Seeder(seeders.JSONFileModelSeeder):
     id = 'M2Seeder'
-    priopity = 2
+    priority = 2
     model = M2
     json_file_path = 'django_seeding_example/seeders_data/M2Seeder.json'
 
@@ -23,7 +23,7 @@ class M2Seeder(seeders.JSONFileModelSeeder):
 @SeederRegistry.register
 class M3Seeder(seeders.CSVFileSerializerSeeder):
     id = 'M3Seeder'
-    priopity = 3
+    priority = 3
     serializer_class = M3Serializer
     csv_file_path = 'django_seeding_example/seeders_data/M3Seeder.csv'
 
@@ -31,7 +31,7 @@ class M3Seeder(seeders.CSVFileSerializerSeeder):
 @SeederRegistry.register
 class M4Seeder(seeders.JSONFileSerializerSeeder):
     id = 'M4Seeder'
-    priopity = 4
+    priority = 4
     serializer_class = M4Serializer
     json_file_path = 'django_seeding_example/seeders_data/M4Seeder.json'
 
@@ -39,7 +39,7 @@ class M4Seeder(seeders.JSONFileSerializerSeeder):
 @SeederRegistry.register
 class M5Seeder(seeders.EmptySeeder):
     id = 'M5Seeder'
-    priopity = 5
+    priority = 5
     model = M5
     records_count = 2
 
@@ -47,7 +47,7 @@ class M5Seeder(seeders.EmptySeeder):
 @SeederRegistry.register
 class M6Seeder(seeders.ModelSeeder):
     id = 'M6Seeder'
-    priopity = 6
+    priority = 6
     model = M6
     data = [
         {
@@ -64,7 +64,7 @@ class M6Seeder(seeders.ModelSeeder):
 @SeederRegistry.register
 class M7Seeder(seeders.SerializerSeeder):
     id = 'M7Seeder'
-    priopity = 7
+    priority = 7
     serializer_class = M7Serializer
     data = [
         {
@@ -81,7 +81,7 @@ class M7Seeder(seeders.SerializerSeeder):
 @SeederRegistry.register
 class CustomSeeder(seeders.Seeder):
     id = 'CustomSeeder'
-    priopity = 8
+    priority = 8
     
     def seed(self):
         post1 = Post.objects.create(content='post1')
