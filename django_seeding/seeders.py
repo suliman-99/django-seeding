@@ -439,56 +439,78 @@ class JSONFileSerializerSeeder(JSONFileReader, SerializerSeeder):
     pass
 
 
-class JSONFileChildModelSeeder(JSONFileModelSeeder):
+class JSONFileChildSeeder(JSONFileModelSeeder):
     """
-    The `JSONFileChildModelSeeder` is a subclass of `JSONFileModelSeeder`, needs `parent_model` and `foreign_key`.
+    The `JSONFileChildSeeder` is a subclass of `JSONFileModelSeeder`, needs `heritage`.
     Use this class to seed models that are related to other models. The model that will be seeded (aka child model) has a `models.ForeignKey` field which references the parent model.
     """
-    def get_parent_models(self):
-        """ Method return the `parent_models` of the model that will be seeded """
-        parent_models = getattr(self, 'parent_models', None)
+    # def get_heritage(self):
+    #     """ Method return the `heritage` of the model that will be seeded """
+    #     heritage = getattr(self, 'heritage', None)
 
-        if parent_models is None:
-            raise TypeError('subclasses of `JSONFileChildModelSeeder` must have `parent_models` class attribute or the `get_parent_models()` method')
-        
-        return parent_models
+    #     if heritage is None:
+    #         raise TypeError('subclasses of `JSONFileChildSeeder` must have `parent_models` class attribute or the `get_parent_models()` method')
+
+    #     return heritage
     
-    def _get_parent_models(self):
-        """ Inner method to validate the value returned by `get_parent_models()` method """
-        parent_models = self.get_parent_models()
+    # def _get_heritage(self):
+    #     """ Inner method to validate the value returned by `get_heritage()` method """
+    #     heritage = self.get_heritage()
 
-        if not isinstance(parent_models, list):
-            raise TypeError('`parent_models` must be list of subclasses of `django.db.models.Model`')
+    #     if not isinstance(heritage, dict):
+    #         raise TypeError('`heritage` must be a dictionary')
         
-        for item in parent_models:
-            if not issubclass(item, models.Model):
-                raise TypeError('each `parent_models` entry must be a subclasses of `django.db.models.Model`')
-
-        return parent_models
+    #     for key in heritage.keys():
+    #         if not issubclass(key, models.Model):
+    #             raise TypeError('each `heritage` key must be a subclass of `django.db.models.Model`')
+    #     # continue to check heritage properties
+    #     return heritage
     
-    def get_keys_dict(self):
-        """
-        Method return the `keys_dict` of {fk: pk}
-        Where pk is the primary key field name of the parent model and fk is the foreign key field name of the child model that will be seeded """
-        keys_dict = getattr(self, 'keys_dict', None)
+    # def get_parent_models(self):
+    #     """ Method return the `parent_models` of the model that will be seeded """
+    #     parent_models = getattr(self, 'parent_models', None)
 
-        if keys_dict is None:
-            raise TypeError('subclasses of `JSONFileChildModelSeeder` must have `keys_dict` class attribute or the `get_keys_dict()` method')
-
-        return keys_dict
-
-    def _get_keys_dict(self):
-        """ Inner method to validate the value returned by `get_keys_dict()` method """
-        keys_dict = self.get_keys_dict()
-        model = self.get_model()
-        child_model_fields = [field.name for field in model._meta.fields]
-        parent_models = self.get_parent_models()
-
-        if not isinstance(keys_dict, dict):
-            raise TypeError('`keys_dict` must be a dict')
+    #     if parent_models is None:
+    #         raise TypeError('subclasses of `JSONFileChildSeeder` must have `parent_models` class attribute or the `get_parent_models()` method')
         
-        if len(parent_models) != len(keys_dict):
-            raise IndexError('`keys_dict` and `parent_models` must have the same size')
+    #     return parent_models
+    
+    # def _get_parent_models(self):
+    #     """ Inner method to validate the value returned by `get_parent_models()` method """
+    #     parent_models = self.get_parent_models()
+
+    #     if not isinstance(parent_models, list):
+    #         raise TypeError('`parent_models` must be list of subclasses of `django.db.models.Model`')
+        
+    #     for item in parent_models:
+    #         if not issubclass(item, models.Model):
+    #             raise TypeError('each `parent_models` entry must be a subclasses of `django.db.models.Model`')
+
+    #     return parent_models
+    
+    # def get_keys_dict(self):
+    #     """
+    #     Method return the `keys_dict` of {fk: pk}
+    #     Where pk is the primary key field name of the parent model and fk is the foreign key field name of the child model that will be seeded """
+    #     keys_dict = getattr(self, 'keys_dict', None)
+
+    #     if keys_dict is None:
+    #         raise TypeError('subclasses of `JSONFileChildSeeder` must have `keys_dict` class attribute or the `get_keys_dict()` method')
+
+    #     return keys_dict
+
+    # def _get_keys_dict(self):
+    #     """ Inner method to validate the value returned by `get_keys_dict()` method """
+    #     keys_dict = self.get_keys_dict()
+    #     model = self.get_model()
+    #     child_model_fields = [field.name for field in model._meta.fields]
+    #     parent_models = self.get_parent_models()
+
+    #     if not isinstance(keys_dict, dict):
+    #         raise TypeError('`keys_dict` must be a dict')
+        
+    #     if len(parent_models) != len(keys_dict):
+    #         raise IndexError('`keys_dict` and `parent_models` must have the same size')
 
         # for fk, p_model in zip(keys_dict.keys(), parent_models):
         #     # Check if keys (fk) in keys_dict are fields in child_model
@@ -506,32 +528,63 @@ class JSONFileChildModelSeeder(JSONFileModelSeeder):
         #     if pk not in p_model_fields:
         #         raise Exception(f'"{pk}" is not a "{p_model.__name__}" field')
 
-        return keys_dict
+        # return keys_dict
     
     def seed(self):
         """ Implementation of `seed()` method for child models """
         model = self._get_model()
-        parent_models = self._get_parent_models()
-        keys_dict = self._get_keys_dict()
+        # heritage = self._get_heritage()
+        # parent_models = self._get_parent_models()
+        # keys_dict = self._get_keys_dict()
         data = self._get_data()
 
-        for entry in data:
-            for fk_name, p_model in zip(keys_dict.keys(), parent_models):
-                pk_name = keys_dict[fk_name]
-                # print(f'pk: {pk_name}, fk: {fk_name}')
-            
-                fk = entry.get(fk_name)
+        def _buscas(tabela, dici):
+            print(f'{tabela} <-> {dici}')
+            fields_info = { field.verbose_name: field.related_model.__name__ for field in tabela._meta.fields if field.is_relation }
+            print()
 
-                try:
-                    pk_obj = p_model.objects.get(**{pk_name: fk})
-                    # print(pk_obj)
-                except p_model.DoesNotExist:
-                    # TO-DO: create parent instance?
-                    # ... parent_model.objects.create()
+            for item, subitens in dici.items():
+                if item in fields_info:
+                    print(item)
+                    _buscas(fields_info[item], subitens)
+                elif  isinstance(subitens, dict):
+                    try:
+                        pk_obj = tabela.objects.get(**{item: subitens})
+                        # print(pk_obj)
+                    except tabela.DoesNotExist:
+                        # TO-DO: create parent instance?
+                        # ... parent_model.objects.create()
+                        
+                        raise Exception(f'Error: instance of "{tabela.__name__}": "{subitens}" does not exist! Please change your seeder.json and try again...')
+                    else:
+                        dici[item] = pk_obj                
+
+        for entry in data:
+            _buscas(model, entry)
+
+
+
+
+
+            # for related_model, keys_dict in heritage.items():
+            #     for rm_field in keys_dict.i
+
+            # for fk_name, p_model in zip(keys_dict.keys(), parent_models):
+            #     pk_name = keys_dict[fk_name]
+            #     # print(f'pk: {pk_name}, fk: {fk_name}')
+            
+            #     fk = entry.get(fk_name)
+
+            #     try:
+            #         pk_obj = p_model.objects.get(**{pk_name: fk})
+            #         # print(pk_obj)
+            #     except p_model.DoesNotExist:
+            #         # TO-DO: create parent instance?
+            #         # ... parent_model.objects.create()
                     
-                    raise Exception(f'Error: instance of "{p_model.__name__}": "{pk_name}" = "{fk}" does not exist! Please change your seeder.json and try again...')
-                else:
-                    entry[fk_name] = pk_obj
+            #         raise Exception(f'Error: instance of "{p_model.__name__}": "{pk_name}" = "{fk}" does not exist! Please change your seeder.json and try again...')
+            #     else:
+            #         entry[fk_name] = pk_obj
 
         new_objects = [model(**entry) for entry in data]
         model.objects.bulk_create(new_objects)

@@ -1,32 +1,32 @@
 [
     {
         "name": "json daughter 1",
-        "father": "json father 1",
-        "mother": "json mother 1"
+        "father": { "name": "json father 1" },
+        "mother": { "name": "json mother 1" }
     },
     {
         "name": "json daughter 2",
-        "father": "json father 2",
-        "mother": "json mother 2"
+        "father": { "name": "json father 2" },
+        "mother": { "name": "json mother 2" }
     },
     {
         "name": "json daughter 3",
-        "father": "json father 2",
-        "mother": "json mother 2"
+        "father": { "name": "json father 2" },
+        "mother": { "name": "json mother 2" }
     },
     {
         "name": "json daughter 4",
-        "father": "json father 3",
-        "mother": "json mother 3"
+        "father": { "name": "json father 3" },
+        "mother": { "name": "json mother 3" }
     },
     {
         "name": "json daughter 5",
-        "father": "json father 3",
-        "mother": "json mother 3"
+        "father": { "name": "json father 3" },
+        "mother": { "name": "json mother 3" }
     },
     {
         "name": "json daughter 6",
-        "father": "json father 3",
-        "mother": "json mother 3"
+        "father": { "name": "json father 3" },
+        "mother": { "name": "json mother 3" }
     }
 ]
