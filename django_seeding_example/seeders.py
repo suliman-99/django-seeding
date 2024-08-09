@@ -94,17 +94,39 @@ class CustomSeeder(seeders.Seeder):
 
 
 @SeederRegistry.register
-class Parent1Seeder(seeders.JSONFileModelSeeder):
-    id = 'Parent1Seeder'
+class FatherSeeder(seeders.JSONFileModelSeeder):
+    id = 'FatherSeeder'
     priority = 9
-    model = Parent1
-    json_file_path = 'django_seeding_example/seeders_data/Parent1Seeder.json'
+    model = Father
+    json_file_path = 'django_seeding_example/seeders_data/FatherSeeder.json'
 
 
 @SeederRegistry.register
-class Child1Seeder(seeders.JSONFileChildModelSeeder):
-    id = 'Child1Seeder'
-    model = Child1
-    parent_model = Parent1
-    keys_dict = {'name': 'parent'}
-    json_file_path = 'django_seeding_example/seeders_data/Child1Seeder.json'
+class SonSeeder(seeders.JSONFileChildModelSeeder):
+    id = 'SonSeeder'
+    model = Son
+    parent_model = Father
+    keys_dict = { "father": "name" }
+    json_file_path = 'django_seeding_example/seeders_data/SonSeeder.json'
+
+
+@SeederRegistry.register
+class MotherSeeder(seeders.JSONFileModelSeeder):
+    id = 'MotherSeeder'
+    priority = 9
+    model = Mother
+    json_file_path = 'django_seeding_example/seeders_data/MotherSeeder.json'
+
+
+@SeederRegistry.register
+class DaughterSeeder(seeders.JSONFileChildModelSeeder):
+    id = 'DaughterSeeder'
+    priority = 10
+    model = Daughter
+    parent_models = [ Father, Mother ]
+    keys_dict = {
+        'father': 'name',
+        'mother': 'name'
+    }
+    json_file_path = 'django_seeding_example/seeders_data/DaughterSeeder.json'
+

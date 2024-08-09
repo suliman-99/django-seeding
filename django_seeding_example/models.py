@@ -45,10 +45,21 @@ class Comment(models.Model):
     content = models.TextField()
 
 
-class Parent1(models.Model):
+class Father(models.Model):
     name = models.TextField()
 
 
-class Child1(models.Model):
-    parent = models.ForeignKey(Parent1, on_delete=models.CASCADE)
+class Son(models.Model):
     name = models.TextField()
+    father = models.ForeignKey(Father, on_delete=models.CASCADE)
+
+
+class Mother(models.Model):
+    name = models.TextField()
+
+
+class Daughter(models.Model):
+    name = models.TextField()
+    father = models.ForeignKey(Father, on_delete=models.CASCADE)
+    mother = models.ForeignKey(Mother, on_delete=models.CASCADE)
+
