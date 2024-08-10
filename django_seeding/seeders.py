@@ -534,18 +534,25 @@ class JSONFileChildSeeder(JSONFileModelSeeder):
         """ Implementation of `seed()` method for child models """
         model = self._get_model()
         data = self._get_data()
+        hashmap = dict()
 
         def _buscas(tabela, dici, mod_entry):
+            if not tabela in hashmap:
+                hashmap[tabela] = dict()
+
             fields_info = { field.verbose_name: field.related_model for field in tabela._meta.fields if field.is_relation }
 
             for item, subitens in dici.items():
                 if item in fields_info:
-                    print(item)
                     mod_entry[item] = _buscas(fields_info[item], subitens, mod_entry[item])
                 elif isinstance(subitens, str):
                     try:
-                        pk_obj = tabela.objects.get(**{item: subitens})
-                        # print(pk_obj)
+                        if subitens in hashmap[tabela]:
+                            pk_obj = hashmap[tabela][subitens]
+
+                        else:
+                            pk_obj = tabela.objects.get(**{item: subitens})
+                            hashmap[tabela][subitens] = pk_obj
                     except tabela.DoesNotExist:
                         # TO-DO: create parent instance?
                         # ... parent_model.objects.create()
