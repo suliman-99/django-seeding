@@ -533,21 +533,16 @@ class JSONFileChildSeeder(JSONFileModelSeeder):
     def seed(self):
         """ Implementation of `seed()` method for child models """
         model = self._get_model()
-        # heritage = self._get_heritage()
-        # parent_models = self._get_parent_models()
-        # keys_dict = self._get_keys_dict()
         data = self._get_data()
 
-        def _buscas(tabela, dici):
-            print(f'{tabela} <-> {dici}')
-            fields_info = { field.verbose_name: field.related_model.__name__ for field in tabela._meta.fields if field.is_relation }
-            print()
+        def _buscas(tabela, dici, mod_entry):
+            fields_info = { field.verbose_name: field.related_model for field in tabela._meta.fields if field.is_relation }
 
             for item, subitens in dici.items():
                 if item in fields_info:
                     print(item)
-                    _buscas(fields_info[item], subitens)
-                elif  isinstance(subitens, dict):
+                    mod_entry[item] = _buscas(fields_info[item], subitens, mod_entry[item])
+                elif isinstance(subitens, str):
                     try:
                         pk_obj = tabela.objects.get(**{item: subitens})
                         # print(pk_obj)
@@ -557,14 +552,10 @@ class JSONFileChildSeeder(JSONFileModelSeeder):
                         
                         raise Exception(f'Error: instance of "{tabela.__name__}": "{subitens}" does not exist! Please change your seeder.json and try again...')
                     else:
-                        dici[item] = pk_obj                
+                        return pk_obj                
 
         for entry in data:
-            _buscas(model, entry)
-
-
-
-
+            _buscas(model, {k : v for k, v in entry.items() if isinstance(v, dict)}, entry)
 
             # for related_model, keys_dict in heritage.items():
             #     for rm_field in keys_dict.i

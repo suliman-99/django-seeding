@@ -105,6 +105,7 @@ class FatherSeeder(seeders.JSONFileModelSeeder):
 class SonSeeder(seeders.JSONFileChildSeeder):
     id = 'SonSeeder'
     model = Son
+    priority = 10
     # parent_model = Father
     # keys_dict = { "father": "name" }
     json_file_path = 'django_seeding_example/seeders_data/SonSeeder.json'
