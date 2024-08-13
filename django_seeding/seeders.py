@@ -441,148 +441,42 @@ class JSONFileSerializerSeeder(JSONFileReader, SerializerSeeder):
 
 class JSONFileChildSeeder(JSONFileModelSeeder):
     """
-    The `JSONFileChildSeeder` is a subclass of `JSONFileModelSeeder`, needs `heritage`.
-    Use this class to seed models that are related to other models. The model that will be seeded (aka child model) has a `models.ForeignKey` field which references the parent model.
+    The `JSONFileChildSeeder` is a subclass of `JSONFileModelSeeder`.
+    Use this class to seed models that are related to other models.
+    The model that will be seeded (aka child model) has a `models.ForeignKey` field which references the parent model.
     """
-    # def get_heritage(self):
-    #     """ Method return the `heritage` of the model that will be seeded """
-    #     heritage = getattr(self, 'heritage', None)
-
-    #     if heritage is None:
-    #         raise TypeError('subclasses of `JSONFileChildSeeder` must have `parent_models` class attribute or the `get_parent_models()` method')
-
-    #     return heritage
-    
-    # def _get_heritage(self):
-    #     """ Inner method to validate the value returned by `get_heritage()` method """
-    #     heritage = self.get_heritage()
-
-    #     if not isinstance(heritage, dict):
-    #         raise TypeError('`heritage` must be a dictionary')
-        
-    #     for key in heritage.keys():
-    #         if not issubclass(key, models.Model):
-    #             raise TypeError('each `heritage` key must be a subclass of `django.db.models.Model`')
-    #     # continue to check heritage properties
-    #     return heritage
-    
-    # def get_parent_models(self):
-    #     """ Method return the `parent_models` of the model that will be seeded """
-    #     parent_models = getattr(self, 'parent_models', None)
-
-    #     if parent_models is None:
-    #         raise TypeError('subclasses of `JSONFileChildSeeder` must have `parent_models` class attribute or the `get_parent_models()` method')
-        
-    #     return parent_models
-    
-    # def _get_parent_models(self):
-    #     """ Inner method to validate the value returned by `get_parent_models()` method """
-    #     parent_models = self.get_parent_models()
-
-    #     if not isinstance(parent_models, list):
-    #         raise TypeError('`parent_models` must be list of subclasses of `django.db.models.Model`')
-        
-    #     for item in parent_models:
-    #         if not issubclass(item, models.Model):
-    #             raise TypeError('each `parent_models` entry must be a subclasses of `django.db.models.Model`')
-
-    #     return parent_models
-    
-    # def get_keys_dict(self):
-    #     """
-    #     Method return the `keys_dict` of {fk: pk}
-    #     Where pk is the primary key field name of the parent model and fk is the foreign key field name of the child model that will be seeded """
-    #     keys_dict = getattr(self, 'keys_dict', None)
-
-    #     if keys_dict is None:
-    #         raise TypeError('subclasses of `JSONFileChildSeeder` must have `keys_dict` class attribute or the `get_keys_dict()` method')
-
-    #     return keys_dict
-
-    # def _get_keys_dict(self):
-    #     """ Inner method to validate the value returned by `get_keys_dict()` method """
-    #     keys_dict = self.get_keys_dict()
-    #     model = self.get_model()
-    #     child_model_fields = [field.name for field in model._meta.fields]
-    #     parent_models = self.get_parent_models()
-
-    #     if not isinstance(keys_dict, dict):
-    #         raise TypeError('`keys_dict` must be a dict')
-        
-    #     if len(parent_models) != len(keys_dict):
-    #         raise IndexError('`keys_dict` and `parent_models` must have the same size')
-
-        # for fk, p_model in zip(keys_dict.keys(), parent_models):
-        #     # Check if keys (fk) in keys_dict are fields in child_model
-        #     if fk not in child_model_fields:
-        #         raise Exception(f'"{fk}" is not a "{model.__name__}" field')
-            
-        #     # Check if the values (pk) are fields in parent_models
-        #     p_model_fields = [field.name for field in p_model._meta.fields]
-        #     pk = dict[fk]
-        #     if isinstance(pk, list):
-        #         for pk_item in pk:
-        #             if pk_item not in p_model_fields:
-        #                 raise Exception(f'"{pk_item}" is not a "{p_model.__name__}" field')
-            
-        #     if pk not in p_model_fields:
-        #         raise Exception(f'"{pk}" is not a "{p_model.__name__}" field')
-
-        # return keys_dict
-    
     def seed(self):
         """ Implementation of `seed()` method for child models """
         model = self._get_model()
         data = self._get_data()
-        hashmap = dict()
 
-        def _buscas(tabela, dici, mod_entry):
-            if not tabela in hashmap:
-                hashmap[tabela] = dict()
+        def _replace_item(entry: dict, model: models.Model):
+            """ replace item in the entry with the db object """
 
-            fields_info = { field.verbose_name: field.related_model for field in tabela._meta.fields if field.is_relation }
+            related_keys_dict = {
+                field.name: field.related_model for field in model._meta.fields if field.is_relation
+            }
 
-            for item, subitens in dici.items():
-                if item in fields_info:
-                    mod_entry[item] = _buscas(fields_info[item], subitens, mod_entry[item])
-                elif isinstance(subitens, str):
-                    try:
-                        if subitens in hashmap[tabela]:
-                            pk_obj = hashmap[tabela][subitens]
+            if len(related_keys_dict) == 0:
+                obj = model.objects.get(**entry)
+                return obj
 
-                        else:
-                            pk_obj = tabela.objects.get(**{item: subitens})
-                            hashmap[tabela][subitens] = pk_obj
-                    except tabela.DoesNotExist:
-                        # TO-DO: create parent instance?
-                        # ... parent_model.objects.create()
-                        
-                        raise Exception(f'Error: instance of "{tabela.__name__}": "{subitens}" does not exist! Please change your seeder.json and try again...')
-                    else:
-                        return pk_obj                
+            for k, v in entry.items():
+                if k in related_keys_dict:
+                    if not isinstance(v, models.Model):
+                        entry[k] = _replace_item(v, related_keys_dict[k])
+
+            return model.objects.get(**entry)
+
 
         for entry in data:
-            _buscas(model, {k : v for k, v in entry.items() if isinstance(v, dict)}, entry)
+            related_keys_dict = {
+                field.name: field.related_model for field in model._meta.fields if field.is_relation
+            }
 
-            # for related_model, keys_dict in heritage.items():
-            #     for rm_field in keys_dict.i
-
-            # for fk_name, p_model in zip(keys_dict.keys(), parent_models):
-            #     pk_name = keys_dict[fk_name]
-            #     # print(f'pk: {pk_name}, fk: {fk_name}')
-            
-            #     fk = entry.get(fk_name)
-
-            #     try:
-            #         pk_obj = p_model.objects.get(**{pk_name: fk})
-            #         # print(pk_obj)
-            #     except p_model.DoesNotExist:
-            #         # TO-DO: create parent instance?
-            #         # ... parent_model.objects.create()
-                    
-            #         raise Exception(f'Error: instance of "{p_model.__name__}": "{pk_name}" = "{fk}" does not exist! Please change your seeder.json and try again...')
-            #     else:
-            #         entry[fk_name] = pk_obj
+            for k, v in entry.items():
+                if k in related_keys_dict:
+                    entry[k] = _replace_item(v, related_keys_dict[k])
 
         new_objects = [model(**entry) for entry in data]
         model.objects.bulk_create(new_objects)

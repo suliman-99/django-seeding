@@ -106,8 +106,6 @@ class SonSeeder(seeders.JSONFileChildSeeder):
     id = 'SonSeeder'
     model = Son
     priority = 10
-    # parent_model = Father
-    # keys_dict = { "father": "name" }
     json_file_path = 'django_seeding_example/seeders_data/SonSeeder.json'
 
 
@@ -124,7 +122,6 @@ class DaughterSeeder(seeders.JSONFileChildSeeder):
     id = 'DaughterSeeder'
     priority = 10
     model = Daughter
-    # parent_models = [Father, Mother]
     json_file_path = 'django_seeding_example/seeders_data/DaughterSeeder.json'
 
 
@@ -132,28 +129,4 @@ class DaughterSeeder(seeders.JSONFileChildSeeder):
 class GrandsonSeeder(seeders.JSONFileChildSeeder):
     id = 'GrandsonSeeder'
     model = Grandson
-    # parent_models = [ Father, Mother, Daughter ]
-    # heritage = {
-    #     Father: { 'name': ['parentage', 'father'] },
-    #     Mother: { 'name': ['parentage', 'mother'] },
-    #     Daughter: {
-    #         'name': ['parentage', 'name'],
-    #         'father': ['parentage', 'father'],
-    #         'mother': ['parentage', 'mother']
-    #     }
-    # }
     json_file_path = 'django_seeding_example/seeders_data/GrandsonSeeder.json'
-
-    # heritage = {
-    #     'parentage': {
-    #         'model': Daughter,
-    #         'father': {
-    #             'model': Father,
-    #             'pk': 'name'
-    #         },
-    #         'mother': {
-    #             'model': Mother,
-    #             'pk': 'name'
-    #         }
-    #     }
-    # }
