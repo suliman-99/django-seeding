@@ -447,8 +447,12 @@ class JSONFileChildSeeder(JSONFileModelSeeder):
     """
     def seed(self):
         """ Implementation of `seed()` method for child models """
-        model = self._get_model()
+        initial_model = self._get_model()
         data = self._get_data()
+        hashmap = dict()
+
+        def _convert_to_tuple(d: dict):
+            return tuple(sorted([(k, _convert_to_tuple(v)) if isinstance(v, dict) else (k, v) for k, v in d.items()]))
 
         def _replace_item(entry: dict, model: models.Model):
             """ replace item in the entry with the db object """
@@ -457,26 +461,57 @@ class JSONFileChildSeeder(JSONFileModelSeeder):
                 field.name: field.related_model for field in model._meta.fields if field.is_relation
             }
 
-            if len(related_keys_dict) == 0:
-                obj = model.objects.get(**entry)
-                return obj
-
             for k, v in entry.items():
                 if k in related_keys_dict:
-                    if not isinstance(v, models.Model):
-                        entry[k] = _replace_item(v, related_keys_dict[k])
+                    if isinstance(v, dict):
+                        if not related_keys_dict[k] in hashmap:
+                            hashmap[related_keys_dict[k]] = dict()
 
-            return model.objects.get(**entry)
+                        tuple_v = _convert_to_tuple(v)
 
+                        if tuple_v in hashmap[related_keys_dict[k]]:
+                            entry[k] = hashmap[related_keys_dict[k]][tuple_v]
+
+                        else:
+                            entry[k] = _replace_item(v, related_keys_dict[k])
+                            hashmap[related_keys_dict[k]][tuple_v] = entry[k]
+
+            if model == initial_model:
+                return
+
+            obj_pk = _convert_to_tuple(entry)
+
+            if not model in hashmap:
+                hashmap[model] = dict()
+
+            if obj_pk in hashmap[model]:
+                return hashmap[model][obj_pk]
+
+            hashmap[model][obj_pk] = model.objects.get(**entry)
+            return hashmap[model][obj_pk]
 
         for entry in data:
-            related_keys_dict = {
-                field.name: field.related_model for field in model._meta.fields if field.is_relation
-            }
+            _replace_item(entry, initial_model)
 
-            for k, v in entry.items():
-                if k in related_keys_dict:
-                    entry[k] = _replace_item(v, related_keys_dict[k])
+            # related_keys_dict = {
+            #    field.name: field.related_model for field in model._meta.fields if field.is_relation
+            # }
 
-        new_objects = [model(**entry) for entry in data]
-        model.objects.bulk_create(new_objects)
+            # for k, v in entry.items():
+            #     if k in related_keys_dict:
+            #         if not related_keys_dict[k] in hashmap:
+            #             hashmap[related_keys_dict[k]] = dict()
+
+            #         tuple_v = _convert_to_tuple(v)
+
+            #         if tuple_v in hashmap[related_keys_dict[k]]:
+            #             print(f"hit cache - {related_keys_dict[k]} {tuple_v}")
+            #             entry[k] = hashmap[related_keys_dict[k]][tuple_v]
+
+            #         else:
+            #             entry[k] = _replace_item(v, related_keys_dict[k])
+            #             print(f"hashmap[{related_keys_dict[k]}[{tuple_v}] = {entry[k]}")
+            #             hashmap[related_keys_dict[k]][tuple_v] = entry[k]
+
+        new_objects = [initial_model(**entry) for entry in data]
+        initial_model.objects.bulk_create(new_objects)
