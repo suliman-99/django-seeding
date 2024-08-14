@@ -33,6 +33,7 @@
 - [Full Examples](#full-examples)
     - [CSVFileModelSeeder (Recommended)](#csvfilemodelseeder-recommended)
     - [JSONFileModelSeeder (Recommended)](#jsonfilemodelseeder-recommended)
+    - [JSONFileChildlSeeder](#jsonfilechildseeder)
     - [CSVFileSerializerSeeder](#csvfileserializerseeder)
     - [JSONFileSerializerSeeder](#jsonfileserializerseeder)
     - [EmptySeeder (Recommended)](#emptyseeder-recommended)
@@ -116,6 +117,7 @@ Now lets go deeper into the different Seeders types with its details:
 ### Seeders List:
 - [CSVFileModelSeeder (Recommended)](#csvfilemodelseeder-recommended)
 - [JSONFileModelSeeder (Recommended)](#jsonfilemodelseeder-recommended)
+- [JSONFileChildlSeeder](#jsonfilechildseeder)
 - [CSVFileSerializerSeeder](#csvfileserializerseeder)
 - [JSONFileSerializerSeeder](#jsonfileserializerseeder)
 - [EmptySeeder (Recommended)](#emptyseeder-recommended)
@@ -297,6 +299,143 @@ seeders_data/M2Seeder.json
 ]
 ```
 
+
+
+#### JSONFileChildSeeder
+
+Blinky-fast `bulk-create` seeder implemented with caching strategy.
+
+This seeder was concieved to seed child models, i.e. models that at least one
+field is a foreign key (`models.ForeignKey`), but can be used instead of
+`JSONFileModelSeeder` for general models as well.
+
+Notice that the keys in the `json-file` must match the field names in the `model`
+and also the structure. Parent models are represented as inner dicts.
+
+models.py
+
+```python
+class Father(models.Model):
+    name = models.TextField()
+
+class Son(models.Model):
+    name = models.TextField()
+    father = models.ForeignKey(Father, on_delete=models.CASCADE)
+```
+
+seeders.py
+
+```python
+@SeederRegistry.register
+class SonSeeder(seeders.JSONFileChildSeeder):
+    id = 'SonSeeder'
+    model = Son
+    priority = 10
+    json_file_path = 'django_seeding_example/seeders_data/SonSeeder.json'
+```
+
+seeders_data/SonSeeder.json
+
+```json
+[
+    {
+        "name": "json son 1",
+        "father": { "name": "json father 1" }
+    },
+    {
+        "name": "json son 2",
+        "father": { "name": "json father 2" }
+    }
+]
+```
+
+Notice that child priority must be greater than parent priority in order to the
+parent model be seeded before. Not seeding parent before will raise errors!
+Each field that is a FK must be a dictionary with field names same as its related model.
+
+This seeder class can handle pretty complex relations between models.
+Let's expand the family (pun intended):
+
+models.py
+
+```python
+class Mother(models.Model):
+    name = models.TextField()
+
+class Daughter(models.Model):
+    name = models.TextField()
+    father = models.ForeignKey(Father, on_delete=models.CASCADE)
+    mother = models.ForeignKey(Mother, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+            UniqueConstraint (
+                fields=['name', 'father', 'mother'],
+                name='unique_parentage'
+            )]
+
+class Grandson(models.Model):
+    name = models.TextField()
+    parentage = models.ForeignKey(Daughter, on_delete=models.CASCADE)
+```
+
+seeders.py
+
+```python
+@SeederRegistry.register
+class DaughterSeeder(seeders.JSONFileChildSeeder):
+    id = 'DaughterSeeder'
+    priority = 10
+    model = Daughter
+    json_file_path = 'django_seeding_example/seeders_data/DaughterSeeder.json'
+
+
+@SeederRegistry.register
+class GrandsonSeeder(seeders.JSONFileChildSeeder):
+    id = 'GrandsonSeeder'
+    model = Grandson
+    json_file_path = 'django_seeding_example/seeders_data/GrandsonSeeder.json'
+```
+
+seeders_data/DaughterSeeder.json
+
+```json
+[
+    {
+        "name": "json daughter 1",
+        "father": { "name": "json father 1" },
+        "mother": { "name": "json mother 1" }
+    },
+    {
+        "name": "json daughter 2",
+        "father": { "name": "json father 2" },
+        "mother": { "name": "json mother 2" }
+    }
+]
+```
+
+seeders_data/GrandsonSeeder.json
+
+```json
+[
+    {
+        "name": "json grandson 1",
+        "parentage": {
+            "name": "json daughter 1",
+            "father": { "name": "json father 1" },
+            "mother": { "name": "json mother 1" }
+        }
+    },
+    {
+        "name": "json grandson 2",
+        "parentage": {
+            "name": "json daughter 2",
+            "father": { "name": "json father 2" },
+            "mother": { "name": "json mother 2" }
+        }
+    }
+]
+```
 
 
 

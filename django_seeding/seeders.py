@@ -493,25 +493,5 @@ class JSONFileChildSeeder(JSONFileModelSeeder):
         for entry in data:
             _replace_item(entry, initial_model)
 
-            # related_keys_dict = {
-            #    field.name: field.related_model for field in model._meta.fields if field.is_relation
-            # }
-
-            # for k, v in entry.items():
-            #     if k in related_keys_dict:
-            #         if not related_keys_dict[k] in hashmap:
-            #             hashmap[related_keys_dict[k]] = dict()
-
-            #         tuple_v = _convert_to_tuple(v)
-
-            #         if tuple_v in hashmap[related_keys_dict[k]]:
-            #             print(f"hit cache - {related_keys_dict[k]} {tuple_v}")
-            #             entry[k] = hashmap[related_keys_dict[k]][tuple_v]
-
-            #         else:
-            #             entry[k] = _replace_item(v, related_keys_dict[k])
-            #             print(f"hashmap[{related_keys_dict[k]}[{tuple_v}] = {entry[k]}")
-            #             hashmap[related_keys_dict[k]][tuple_v] = entry[k]
-
         new_objects = [initial_model(**entry) for entry in data]
         initial_model.objects.bulk_create(new_objects)
