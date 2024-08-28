@@ -481,17 +481,11 @@ class JSONFileChildSeeder(JSONFileModelSeeder):
 
             obj_pk = _convert_to_tuple(entry)
 
-            if not model in hashmap:
-                hashmap[model] = dict()
-
-            if obj_pk in hashmap[model]:
-                return hashmap[model][obj_pk]
-
-            hashmap[model][obj_pk] = model.objects.get(**entry)
-            return hashmap[model][obj_pk]
+            return model.objects.get(**entry)
 
         for entry in data:
             _replace_item(entry, initial_model)
 
         new_objects = [initial_model(**entry) for entry in data]
         initial_model.objects.bulk_create(new_objects)
+
