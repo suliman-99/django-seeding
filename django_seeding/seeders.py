@@ -481,11 +481,15 @@ class JSONFileChildSeeder(JSONFileModelSeeder):
 
             obj_pk = _convert_to_tuple(entry)
 
-            return model.objects.get(**entry)
+            try:
+                return model.objects.get(**entry)
+            
+            except model.DoesNotExist:
+                raise Exception(f"`{obj_pk}` instance of `{model._meta.db_table}` doesn't exist!")
+
 
         for entry in data:
             _replace_item(entry, initial_model)
 
         new_objects = [initial_model(**entry) for entry in data]
         initial_model.objects.bulk_create(new_objects)
-
