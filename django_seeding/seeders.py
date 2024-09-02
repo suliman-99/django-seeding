@@ -74,7 +74,7 @@ class Seeder():
         return getattr(self, 'priority', float('inf'))
     
     def _get_priority(self):
-        """ Innder method to validate the value returned by `get_priority()` method """
+        """ Inner method to validate the value returned by `get_priority()` method """
         priority = self.get_priority()
 
         if not isinstance(priority, float) and not isinstance(priority, int):
@@ -97,7 +97,7 @@ class Seeder():
         return getattr(self, 'just_debug', False)
     
     def _get_just_debug(self):
-        """ Innder method to validate the value returned by `get_just_debug()` method """
+        """ Inner method to validate the value returned by `get_just_debug()` method """
         just_debug = self.get_just_debug()
 
         if not isinstance(just_debug, bool):
@@ -131,7 +131,7 @@ class Seeder():
         return getattr(self, 'id', str(type(self)))
     
     def _get_id(self):
-        """ Innder method to validate the value returned by `get_id()` method """
+        """ Inner method to validate the value returned by `get_id()` method """
         id = self.get_id()
 
         if not isinstance(id, str):
@@ -161,7 +161,7 @@ class DataSeeder(Seeder):
         return data
     
     def _get_data(self):
-        """ Innder method to validate the value returned by `get_data()` method """
+        """ Inner method to validate the value returned by `get_data()` method """
         data = self.get_data()
 
         error_message = '`data` must be list of dict'
@@ -196,7 +196,7 @@ class ModelSeeder(DataSeeder):
         return model
     
     def _get_model(self):
-        """ Innder method to validate the value returned by `get_model()` method """
+        """ Inner method to validate the value returned by `get_model()` method """
         model = self.get_model()
 
         if not isinstance(model, type) or not issubclass(model, models.Model):
@@ -234,7 +234,7 @@ class SerializerSeeder(DataSeeder):
         return serializer_class
     
     def _get_serializer_class(self):
-        """ Innder method to validate the value returned by `get_serializer_class()` method """
+        """ Inner method to validate the value returned by `get_serializer_class()` method """
         serializer_class = self.get_serializer_class()
 
         if not isinstance(serializer_class, type) or not issubclass(serializer_class, serializers.Serializer):
@@ -274,7 +274,7 @@ class EmptySeeder(ModelSeeder):
         return records_count
     
     def _get_records_count(self):
-        """ Innder method to validate the value returned by `get_records_count()` method """
+        """ Inner method to validate the value returned by `get_records_count()` method """
         records_count = self.get_records_count()
 
         if not isinstance(records_count, int):
@@ -310,7 +310,7 @@ class CSVFileReader():
         return csv_file_path
     
     def _get_csv_file_path(self):
-        """ Innder method to validate the value returned by `get_csv_file_path()` method """
+        """ Inner method to validate the value returned by `get_csv_file_path()` method """
         csv_file_path = self.get_csv_file_path()
 
         if not isinstance(csv_file_path, str):
@@ -351,7 +351,7 @@ class JSONFileReader():
         return json_file_path
     
     def _get_json_file_path(self):
-        """ Innder method to validate the value returned by `get_json_file_path()` method """
+        """ Inner method to validate the value returned by `get_json_file_path()` method """
         json_file_path = self.get_json_file_path()
 
         if not isinstance(json_file_path, str):
@@ -437,3 +437,59 @@ class JSONFileSerializerSeeder(JSONFileReader, SerializerSeeder):
             `get_serializer_class()` as <method>
     """
     pass
+
+
+class JSONFileChildSeeder(JSONFileModelSeeder):
+    """
+    The `JSONFileChildSeeder` is a subclass of `JSONFileModelSeeder`.
+    Use this class to seed models that are related to other models.
+    The model that will be seeded (aka child model) has a `models.ForeignKey` field which references the parent model.
+    """
+    def seed(self):
+        """ Implementation of `seed()` method for child models """
+        initial_model = self._get_model()
+        data = self._get_data()
+        hashmap = dict()
+
+        def _convert_to_tuple(d: dict):
+            return tuple(sorted([(k, _convert_to_tuple(v)) if isinstance(v, dict) else (k, v) for k, v in d.items()]))
+
+        def _replace_item(entry: dict, model: models.Model):
+            """ replace item in the entry with the db object """
+
+            related_keys_dict = {
+                field.name: field.related_model for field in model._meta.fields if field.is_relation
+            }
+
+            for k, v in entry.items():
+                if k in related_keys_dict:
+                    if isinstance(v, dict):
+                        if not related_keys_dict[k] in hashmap:
+                            hashmap[related_keys_dict[k]] = dict()
+
+                        tuple_v = _convert_to_tuple(v)
+
+                        if tuple_v in hashmap[related_keys_dict[k]]:
+                            entry[k] = hashmap[related_keys_dict[k]][tuple_v]
+
+                        else:
+                            entry[k] = _replace_item(v, related_keys_dict[k])
+                            hashmap[related_keys_dict[k]][tuple_v] = entry[k]
+
+            if model == initial_model:
+                return
+
+            obj_pk = _convert_to_tuple(entry)
+
+            try:
+                return model.objects.get(**entry)
+            
+            except model.DoesNotExist:
+                raise Exception(f"`{obj_pk}` instance of `{model._meta.db_table}` doesn't exist!")
+
+
+        for entry in data:
+            _replace_item(entry, initial_model)
+
+        new_objects = [initial_model(**entry) for entry in data]
+        initial_model.objects.bulk_create(new_objects)

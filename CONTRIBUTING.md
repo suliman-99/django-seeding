@@ -7,7 +7,7 @@
  -->
 # Contributing to Django Seeding
 
-Thank you for your interest in contributing to Django Seeding We welcome contributions from anyone, regardless of their level of experience or expertise.
+Thank you for your interest in contributing to Django Seeding! We welcome contributions from anyone, regardless of their level of experience or expertise.
 
 ## Getting Started
 
