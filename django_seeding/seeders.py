@@ -5,6 +5,8 @@ from django.conf import settings
 from django.http import HttpRequest
 from rest_framework import serializers
 from django_seeding.models import AppliedSeeder
+from django_seeding.hashable_dict import HashableDict
+from django_seeding.cache_methods import replace_item
 
 
 class Seeder():
@@ -445,51 +447,15 @@ class JSONFileChildSeeder(JSONFileModelSeeder):
     Use this class to seed models that are related to other models.
     The model that will be seeded (aka child model) has a `models.ForeignKey` field which references the parent model.
     """
+    
     def seed(self):
         """ Implementation of `seed()` method for child models """
-        initial_model = self._get_model()
         data = self._get_data()
-        hashmap = dict()
+        model = self._get_model()
 
-        def _convert_to_tuple(d: dict):
-            return tuple(sorted([(k, _convert_to_tuple(v)) if isinstance(v, dict) else (k, v) for k, v in d.items()]))
+        data = tuple(HashableDict(record_data) for record_data in data)
+        for record_data in data:
+            replace_item(model, model, record_data)
 
-        def _replace_item(entry: dict, model: models.Model):
-            """ replace item in the entry with the db object """
-
-            related_keys_dict = {
-                field.name: field.related_model for field in model._meta.fields if field.is_relation
-            }
-
-            for k, v in entry.items():
-                if k in related_keys_dict:
-                    if isinstance(v, dict):
-                        if not related_keys_dict[k] in hashmap:
-                            hashmap[related_keys_dict[k]] = dict()
-
-                        tuple_v = _convert_to_tuple(v)
-
-                        if tuple_v in hashmap[related_keys_dict[k]]:
-                            entry[k] = hashmap[related_keys_dict[k]][tuple_v]
-
-                        else:
-                            entry[k] = _replace_item(v, related_keys_dict[k])
-                            hashmap[related_keys_dict[k]][tuple_v] = entry[k]
-
-            if model == initial_model:
-                return
-
-            obj_pk = _convert_to_tuple(entry)
-
-            try:
-                return model.objects.get(**entry)
-            
-            except model.DoesNotExist:
-                raise Exception(f"`{obj_pk}` instance of `{model._meta.db_table}` doesn't exist!")
-
-
-        for entry in data:
-            _replace_item(entry, initial_model)
-
-        new_objects = [initial_model(**entry) for entry in data]
-        initial_model.objects.bulk_create(new_objects)
+        new_objects = [model(**record_data) for record_data in data]
+        model.objects.bulk_create(new_objects)
