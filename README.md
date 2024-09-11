@@ -33,7 +33,7 @@
 - [Full Examples](#full-examples)
     - [CSVFileModelSeeder (Recommended)](#csvfilemodelseeder-recommended)
     - [JSONFileModelSeeder (Recommended)](#jsonfilemodelseeder-recommended)
-    - [JSONFileChildlSeeder](#jsonfilechildseeder)
+    - [JSONFileChildSeeder (Recommended)](#jsonfilechildseeder-recommended)
     - [CSVFileSerializerSeeder](#csvfileserializerseeder)
     - [JSONFileSerializerSeeder](#jsonfileserializerseeder)
     - [EmptySeeder (Recommended)](#emptyseeder-recommended)
@@ -117,7 +117,7 @@ Now lets go deeper into the different Seeders types with its details:
 ### Seeders List:
 - [CSVFileModelSeeder (Recommended)](#csvfilemodelseeder-recommended)
 - [JSONFileModelSeeder (Recommended)](#jsonfilemodelseeder-recommended)
-- [JSONFileChildlSeeder](#jsonfilechildseeder)
+- [JSONFileChildSeeder (Recommended)](#jsonfilechildseeder)
 - [CSVFileSerializerSeeder](#csvfileserializerseeder)
 - [JSONFileSerializerSeeder](#jsonfileserializerseeder)
 - [EmptySeeder (Recommended)](#emptyseeder-recommended)
@@ -178,6 +178,7 @@ JSONFile..Seeder needs `json_file_path` class-attribute
 
 * `@SeederRegistry.register` is the decorator that register the seeder, so, if this decorator is not applied then the seeder will not be applied
 * Model seeders use bulk_create method, so, they are faster than Serializer seeders
+* Child seeders use bulk_create method with caching fetch for related objects, so, they are faster than Serializer seeders
 * CSV file reader is using pandas for a better performance and less bugs
 * Using Model seeders means the field names must match the fields you have defined in your model
 * Using Serializer seeders means the field names must match the fields you have defined in your serializer
@@ -216,15 +217,32 @@ python manage.py runserver --seed
 SEEDING_ON_RUNSERVER = True
 ``` 
 
-#### Notice: 
+#### Automatically Seeding: 
 * If you set `SEEDING_ON_RUNSERVER=True` in your settings file You can stop seeding in a runserver by using `--dont-seed` argument
 
 ```
 python manage.py runserver --dont-seed
 ```
 
+#### Managing Debug Mode with the seed Command:
+By default, the seed command will use the DEBUG setting from your Django project's settings.py. However, you can override this by explicitly passing the --debug option when running the command.
 
-## Full Examples:
+Force DEBUG to True:
+
+```
+python manage.py seed --debug=True
+```
+
+Force DEBUG to False:
+
+```
+python manage.py seed --debug=False
+```
+
+If no value is specified for --debug, the command will fall back to the project's current DEBUG setting.
+
+
+## Full Seeders Examples:
 
 
 Here we will go deeper in the seeders classes and its details
@@ -301,11 +319,11 @@ seeders_data/M2Seeder.json
 
 
 
-#### JSONFileChildSeeder
+#### JSONFileChildSeeder (Recommended):
 
 Blinky-fast `bulk-create` seeder implemented with caching strategy.
 
-This seeder was concieved to seed child models, i.e. models that at least one
+This seeder was conceived to seed child models, i.e. models that at least one
 field is a foreign key (`models.ForeignKey`), but can be used instead of
 `JSONFileModelSeeder` for general models as well.
 
