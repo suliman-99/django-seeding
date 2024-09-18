@@ -1,0 +1,261 @@
+{
+	"info": {
+		"_postman_id": "f26bc6eb-0b7b-4e89-a64b-de1de952eb63",
+		"name": "Django Seeding",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33910203",
+		"_collection_link": "https://djangoteampancode.postman.co/workspace/Django-Team-Workspace~ff869be8-22e1-42bd-8433-2b854db7a347/collection/33910203-f26bc6eb-0b7b-4e89-a64b-de1de952eb63?action=share&source=collection_link&creator=33910203"
+	},
+	"item": [
+		{
+			"name": "Registered Seeders",
+			"item": [
+				{
+					"name": "Seed All",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT {{superuserToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"debug\": true,\r\n    \"ids\": [\r\n        \"id1\",\r\n        \"id2\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BaseURL}}/api/seeder/registered-seeders/seed-all/",
+							"host": [
+								"{{BaseURL}}"
+							],
+							"path": [
+								"api",
+								"seeder",
+								"registered-seeders",
+								"seed-all",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT {{superuserToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{BaseURL}}/api/seeder/registered-seeders/",
+							"host": [
+								"{{BaseURL}}"
+							],
+							"path": [
+								"api",
+								"seeder",
+								"registered-seeders",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Applied Seeders",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT {{superuserToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{BaseURL}}/api/seeder/applied-seeders/",
+							"host": [
+								"{{BaseURL}}"
+							],
+							"path": [
+								"api",
+								"seeder",
+								"applied-seeders",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT {{superuserToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{BaseURL}}/api/seeder/applied-seeders/id/",
+							"host": [
+								"{{BaseURL}}"
+							],
+							"path": [
+								"api",
+								"seeder",
+								"applied-seeders",
+								"id",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT {{superuserToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"SuperUserSeeder1\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BaseURL}}/api/seeder/applied-seeders/",
+							"host": [
+								"{{BaseURL}}"
+							],
+							"path": [
+								"api",
+								"seeder",
+								"applied-seeders",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT {{superuserToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"new_id\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BaseURL}}/api/seeder/applied-seeders/id/",
+							"host": [
+								"{{BaseURL}}"
+							],
+							"path": [
+								"api",
+								"seeder",
+								"applied-seeders",
+								"id",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete One",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT {{superuserToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{BaseURL}}/api/seeder/applied-seeders/id/",
+							"host": [
+								"{{BaseURL}}"
+							],
+							"path": [
+								"api",
+								"seeder",
+								"applied-seeders",
+								"id",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete All",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT {{superuserToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{BaseURL}}/api/seeder/applied-seeders/delete-all/",
+							"host": [
+								"{{BaseURL}}"
+							],
+							"path": [
+								"api",
+								"seeder",
+								"applied-seeders",
+								"delete-all",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
