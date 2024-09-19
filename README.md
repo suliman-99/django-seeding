@@ -30,6 +30,7 @@
     - [Seeders List](#seeders-list)
     - [Attributes List](#attributes-list)
     - [Run Methods](#run-methods)
+- [Built-in RESTfull APIs for Management](#built-in-restfull-apis-for-management)
 - [Full Examples](#full-examples)
     - [CSVFileModelSeeder (Recommended)](#csvfilemodelseeder-recommended)
     - [JSONFileModelSeeder (Recommended)](#jsonfilemodelseeder-recommended)
@@ -184,15 +185,14 @@ JSONFile..Seeder needs `json_file_path` class-attribute
 * Using Serializer seeders means the field names must match the fields you have defined in your serializer
 * you can define `get_` class-methods instead of class-attributes as below:
     
-    ```
-    get_model
-    get_serializer_class
-    get_csv_file_path
-    get_json_file_path
-    get_id
-    get_priority
-    get_just_debug
-    ```
+    - get_model
+    - get_serializer_class
+    - get_csv_file_path
+    - get_json_file_path
+    - get_id
+    - get_priority
+    - get_just_debug
+    
 
 
 ### Run methods:
@@ -240,6 +240,134 @@ python manage.py seed --debug=False
 ```
 
 If no value is specified for --debug, the command will fall back to the project's current DEBUG setting.
+
+
+### Built-in RESTfull APIs for Management
+
+To manage seeders from a dashboard, we provide APIs that offer full control over seeder operations.
+
+
+#### Usage:
+
+Route django-seeding views in our seeder app urls.py:
+
+```
+from rest_framework import routers
+from django_seeding.apis.views import AppliedSeederViewSet, RegisteredSeederViewSet
+
+
+router = routers.DefaultRouter()
+
+router.register('registered-seeders', RegisteredSeederViewSet, 'registered-seeders')
+router.register('applied-seeders', AppliedSeederViewSet, 'applied-seeders')
+
+urlpatterns = router.urls 
+
+```
+
+Route our seeder app in the project urls.py:
+
+```
+from django.urls import include
+...
+urlpatterns = [
+    ...
+    path('seeder/', include('django_seeding_example.urls')),
+    ...
+]
+...
+```
+
+
+#### Customization:
+
+You can customize the permissions or any other logic by inheriting the provided viewsets and overriding the necessary methods to meet your specific project requirements.
+
+
+#### Postman Collection for API Testing:
+
+To make it easier for you to test the APIs, we have provided a Postman collection containing all the API endpoints. You can download the collection and import it into Postman for quick and easy testing.
+
+Steps to Use the Postman Collection:
+
+- Download the Postman collection from [this link](https://github.com/suliman-99/django-seeding/releases/download/postman-collection/Django_Seeding.postman_collection.json).
+- Open Postman, click on "Import", and select the .json file you just downloaded.
+- You will now have all the API endpoints pre-configured and ready for testing in Postman.
+
+
+#### Registered Seeder Endpoint:
+
+In this package, seeder classes must be registered to be applied. This endpoint allows you to:
+- List all registered seeders: This includes both applied and non-applied seeders.
+
+    GET `/registered-seeders/`
+
+- Apply specific seeders: You can apply all seeders or select specific ones.
+
+    POST `/registered-seeders/seed-all/`
+
+    we can specify the debug mode for the seeding and the needed ids to be seeded in the body like this (both of them are optional - can be null):
+
+    ```
+    {
+        "debug": true,
+        "ids": [
+            "id1",
+            "id2"
+        ]
+    }
+    ```
+
+#### Applied Seeders Endpoint:
+
+Applied seeders are tracked in a dedicated model to prevent them from being applied multiple times. The Applied Seeder endpoints provide full management over the applied seeder records, allowing you to:
+
+- List all applied seeders: View all seeders that have been applied.
+
+    Get `/applied-seeders/`
+
+- Retrieve a specific applied seeder: View details of a particular seeder.
+
+    Get `/applied-seeders/{id}/`
+
+- Mark a seeder as applied: Create a record in the applied seeder model to indicate it has been applied.
+
+    POST `/applied-seeders/`
+
+    Request body:
+    ```
+    {
+        "id": "id"
+    }
+    ```
+
+
+- Update a seeder record: Useful for changing a seeder's ID.
+
+    PUT `/applied-seeders/{id}/`
+    
+    Request body:
+    ```
+    {
+        "id": "new_id"
+    }
+    ```
+
+- Delete a specific applied seeder: Removes a record to mark the seeder as not applied.
+
+    DELETE `/applied-seeders/{id}/`
+
+- Delete all applied seeders: This allows all seeders to be re-applied.
+
+    DELETE `/applied-seeders/delete-all/`
+
+#### Applied Seeder Table Schema:
+
+- id: `int (Primary Key)`
+
+- created_at: `datetime`
+
+- updated_at: `datetime`
 
 
 ## Full Seeders Examples:
