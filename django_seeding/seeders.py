@@ -288,7 +288,7 @@ class EmptySeeder(ModelSeeder):
         """ Standard Implementation of `seed()` method for empty objects with `bulk_create()` """
         records_count = self._get_records_count()
         model = self._get_model()
-        new_objects = (model() for _ in range(records_count))
+        new_objects = [model() for _ in range(records_count)]
         model.objects.bulk_create(new_objects)
     
 
